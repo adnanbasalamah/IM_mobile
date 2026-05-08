@@ -3,6 +3,10 @@
 *.webp
 manrope_css.txt
 ospos.sql
+node_modules/
+package.json
+package-lock.json
+resize_icons.js
 im_mobile_v1.zip
 im_mobile_v2.zip
 im_mobile_v3.zip
