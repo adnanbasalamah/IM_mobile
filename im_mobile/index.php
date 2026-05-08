@@ -81,8 +81,8 @@ $displayName = $user ? $user['first_name'] : 'User';
         </a>
     </nav>
 
-    <script src="assets/js/chart.umd.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/chart.umd.js?v=2"></script>
+    <script src="assets/js/app.js?v=2"></script>
     <script>
         IM.init();
     </script>

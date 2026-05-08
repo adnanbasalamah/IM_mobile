@@ -18,7 +18,7 @@ if (!$saleId) {
 $db = getDB();
 
 $saleSql = "SELECT s.sale_id, s.sale_time, s.sale_status,
-                   CONCAT(emp.first_name, ' ', emp.last_name) as kasir_nama,
+                   COALESCE(CONCAT(emp.first_name, ' ', emp.last_name), emp.first_name, emp.last_name, 'Unknown') as kasir_nama,
                    s.customer_id
             FROM ospos_sales s
             JOIN ospos_employees e ON s.employee_id = e.person_id

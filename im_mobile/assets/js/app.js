@@ -361,8 +361,8 @@ const IM = {
 
         if (elSaleId) elSaleId.textContent = '#' + data.sale_id;
         if (elTime) elTime.textContent = timeStr;
-        if (elCustomer) elCustomer.textContent = data.pelanggan;
-        if (elKasir) elKasir.textContent = data.kasir.toUpperCase();
+        if (elCustomer) elCustomer.textContent = data.pelanggan || '-';
+        if (elKasir) elKasir.textContent = (data.kasir || '-').toUpperCase();
         if (elItems) elItems.innerHTML = itemsHtml;
         if (elSubtotal) elSubtotal.textContent = this.formatRupiahFull(data.subtotal);
         if (elTotal) elTotal.textContent = this.formatRupiahFull(data.total);
