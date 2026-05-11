@@ -812,12 +812,11 @@ const IM = {
             html += '<div class="harga-item-info">';
             html += '<p class="harga-item-name">' + this.escapeHtml(item.name) + '</p>';
             html += '<div class="harga-item-detail">';
-            html += '<span class="harga-item-sku">SKU: ' + this.escapeHtml(item.sku || '-') + '</span>';
-            html += '</div>';
-            html += '</div>';
             html += '<div class="harga-item-prices">';
             html += '<span class="harga-item-price-tag harga-item-cost">Modal ' + this.formatRupiahFull(item.cost_price) + '</span>';
             html += '<span class="harga-item-price-tag harga-item-selling">Jual ' + this.formatRupiahFull(item.unit_price) + '</span>';
+            html += '</div>';
+            html += '</div>';
             html += '</div>';
             html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="harga-item-arrow" style="width:20px;height:20px"><polyline points="9 18 15 12 9 6"/></svg>';
             html += '</div>';
