@@ -747,7 +747,7 @@ const IM = {
             clearBtn.addEventListener('click', () => {
                 searchInput.value = '';
                 clearBtn.style.display = 'none';
-                document.getElementById('harga-list').innerHTML = '<div class="stock-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;color:var(--outline)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Ketik nama produk untuk mencari</p></div>';
+                document.getElementById('harga-list').innerHTML = '<div class="stock-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;color:var(--outline)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Ketik minimal 3 huruf untuk mencari</p></div>';
                 document.getElementById('harga-count').textContent = '0 Produk';
             });
         }
@@ -765,8 +765,6 @@ const IM = {
         const priceInput = document.getElementById('harga-edit-price');
         if (costInput) costInput.addEventListener('input', () => this.updateProfitDisplay());
         if (priceInput) priceInput.addEventListener('input', () => this.updateProfitDisplay());
-
-        this.loadAllHarga();
     },
 
     async loadAllHarga() {
@@ -783,9 +781,15 @@ const IM = {
 
     searchHarga(q) {
         clearTimeout(this.searchTimeout);
+        const container = document.getElementById('harga-list');
+        const countEl = document.getElementById('harga-count');
+        if (q.length < 3) {
+            if (container) container.innerHTML = '<div class="stock-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;color:var(--outline)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Ketik minimal 3 huruf untuk mencari</p></div>';
+            if (countEl) countEl.textContent = '0 Produk';
+            return;
+        }
         this.searchTimeout = setTimeout(() => {
-            const url = q ? 'api/harga_search.php?q=' + encodeURIComponent(q) : 'api/harga_search.php';
-            fetch(url).then(r => r.json()).then(data => this.renderHargaResults(data)).catch(() => {});
+            fetch('api/harga_search.php?q=' + encodeURIComponent(q)).then(r => r.json()).then(data => this.renderHargaResults(data)).catch(() => {});
         }, 300);
     },
 

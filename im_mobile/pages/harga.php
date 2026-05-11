@@ -25,7 +25,7 @@
     <div id="harga-list" class="harga-list">
         <div class="stock-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;color:var(--outline)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <p>Ketik nama produk untuk mencari</p>
+            <p>Ketik minimal 3 huruf untuk mencari</p>
         </div>
     </div>
 </section>
