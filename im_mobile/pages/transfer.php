@@ -12,7 +12,7 @@
     </div>
 </section>
 
-<section class="transfer-summary" id="transfer-summary" style="display:none;">
+<section class="transfer-summary" id="transfer-summary">
     <div class="transfer-summary-card">
         <label class="transfer-summary-label">Total Transfer</label>
         <div class="transfer-summary-value" id="transfer-total-value">Rp 0</div>

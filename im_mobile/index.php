@@ -27,7 +27,7 @@ $displayName = $user ? $user['first_name'] : 'User';
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-180x180.png">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=3">
 </head>
 <body class="<?= $page === 'login' ? '' : 'has-nav' ?>">
 
@@ -89,7 +89,7 @@ $displayName = $user ? $user['first_name'] : 'User';
     </nav>
 
     <script src="assets/js/chart.umd.js?v=2"></script>
-    <script src="assets/js/app.js?v=2"></script>
+    <script src="assets/js/app.js?v=3"></script>
     <script>
         IM.init();
     </script>

@@ -267,11 +267,11 @@ const IM = {
 
         if (!data.transfers || data.transfers.length === 0) {
             container.innerHTML = '<div class="stock-empty"><p>Tidak ada transaksi transfer pada tanggal ini</p></div>';
-            if (summaryEl) summaryEl.style.display = 'none';
+            if (summaryEl) summaryEl.classList.add('hidden');
             return;
         }
 
-        if (summaryEl) summaryEl.style.display = '';
+        if (summaryEl) summaryEl.classList.remove('hidden');
         if (totalValueEl) totalValueEl.textContent = this.formatRupiahFull(data.total_nilai || 0);
 
         let html = '';
