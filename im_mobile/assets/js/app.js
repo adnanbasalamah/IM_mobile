@@ -911,7 +911,8 @@ const IM = {
             if (data.success) {
                 this.showToast('Harga berhasil disimpan!');
                 this.closeHargaModal();
-                this.loadAllHarga();
+                const searchInput = document.getElementById('harga-search');
+                this.searchHarga(searchInput ? searchInput.value.trim() : '');
             } else {
                 this.showToast('Gagal: ' + (data.error || 'Unknown error'));
             }
