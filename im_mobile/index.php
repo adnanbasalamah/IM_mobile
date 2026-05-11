@@ -2,7 +2,7 @@
 require_once 'config.php';
 
 $page = $_GET['page'] ?? 'dashboard';
-$validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir'];
+$validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir', 'harga'];
 
 if (!isLoggedIn()) {
     $page = 'login';
@@ -27,7 +27,7 @@ $displayName = $user ? $user['first_name'] : 'User';
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-180x180.png">
-    <link rel="stylesheet" href="assets/css/style.css?v=3">
+    <link rel="stylesheet" href="assets/css/style.css?v=4">
 </head>
 <body class="<?= $page === 'login' ? '' : 'has-nav' ?>">
 
@@ -86,10 +86,17 @@ $displayName = $user ? $user['first_name'] : 'User';
             </svg>
             <span class="nav-label">Kasir</span>
         </a>
+        <a href="#harga" class="nav-item <?= $page === 'harga' ? 'active' : '' ?>" data-page="harga">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <span class="nav-label">Harga</span>
+        </a>
     </nav>
 
     <script src="assets/js/chart.umd.js?v=2"></script>
-    <script src="assets/js/app.js?v=3"></script>
+    <script src="assets/js/app.js?v=4"></script>
     <script>
         IM.init();
     </script>

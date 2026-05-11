@@ -19,7 +19,7 @@ const IM = {
     },
 
     async navigateTo(page, updateHash = true) {
-        const validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir'];
+        const validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir', 'harga'];
         if (!validPages.includes(page)) page = 'dashboard';
 
         this.page = page;
@@ -59,6 +59,7 @@ const IM = {
             case 'nota': this.initNota(); break;
             case 'stok': this.initStok(); break;
             case 'kasir': this.initKasir(); break;
+            case 'harga': this.initHarga(); break;
         }
     },
 
@@ -728,6 +729,194 @@ const IM = {
         const inputs = document.querySelectorAll('.kasir-count-input');
         inputs.forEach(input => { input.value = ''; });
         this.calculateKasir();
+    },
+
+    // ===== UPDATE HARGA =====
+    initHarga() {
+        const searchInput = document.getElementById('harga-search');
+        const clearBtn = document.getElementById('harga-search-clear');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.trim();
+            clearBtn.style.display = q ? 'flex' : 'none';
+            this.searchHarga(q);
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearBtn.style.display = 'none';
+                document.getElementById('harga-list').innerHTML = '<div class="stock-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;color:var(--outline)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Ketik nama produk untuk mencari</p></div>';
+                document.getElementById('harga-count').textContent = '0 Produk';
+            });
+        }
+
+        const modalOverlay = document.getElementById('harga-modal-overlay');
+        if (modalOverlay) modalOverlay.addEventListener('click', () => this.closeHargaModal());
+
+        const btnCancel = document.getElementById('harga-btn-cancel');
+        if (btnCancel) btnCancel.addEventListener('click', () => this.closeHargaModal());
+
+        const btnSave = document.getElementById('harga-btn-save');
+        if (btnSave) btnSave.addEventListener('click', () => this.saveHarga());
+
+        const costInput = document.getElementById('harga-edit-cost');
+        const priceInput = document.getElementById('harga-edit-price');
+        if (costInput) costInput.addEventListener('input', () => this.updateProfitDisplay());
+        if (priceInput) priceInput.addEventListener('input', () => this.updateProfitDisplay());
+
+        this.loadAllHarga();
+    },
+
+    async loadAllHarga() {
+        try {
+            const resp = await fetch('api/harga_search.php');
+            const data = await resp.json();
+            this.renderHargaResults(data);
+        } catch (err) {
+            console.error('Harga load error:', err);
+        }
+    },
+
+    searchTimeout: null,
+
+    searchHarga(q) {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+            const url = q ? 'api/harga_search.php?q=' + encodeURIComponent(q) : 'api/harga_search.php';
+            fetch(url).then(r => r.json()).then(data => this.renderHargaResults(data)).catch(() => {});
+        }, 300);
+    },
+
+    renderHargaResults(data) {
+        const container = document.getElementById('harga-list');
+        const countEl = document.getElementById('harga-count');
+        if (!container) return;
+
+        const items = data.items || [];
+        if (countEl) countEl.textContent = (data.total || items.length) + ' Produk';
+
+        if (items.length === 0) {
+            container.innerHTML = '<div class="stock-empty"><p>Produk tidak ditemukan</p></div>';
+            return;
+        }
+
+        let html = '';
+        items.forEach(item => {
+            html += '<div class="harga-item" onclick="IM.openHargaEdit(' + item.item_id + ')">';
+            html += '<div class="harga-item-info">';
+            html += '<p class="harga-item-name">' + this.escapeHtml(item.name) + '</p>';
+            html += '<div class="harga-item-detail">';
+            html += '<span class="harga-item-sku">SKU: ' + this.escapeHtml(item.sku || '-') + '</span>';
+            html += '</div>';
+            html += '</div>';
+            html += '<div class="harga-item-prices">';
+            html += '<span class="harga-item-price-tag harga-item-cost">Modal ' + this.formatRupiahFull(item.cost_price) + '</span>';
+            html += '<span class="harga-item-price-tag harga-item-selling">Jual ' + this.formatRupiahFull(item.unit_price) + '</span>';
+            html += '</div>';
+            html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="harga-item-arrow" style="width:20px;height:20px"><polyline points="9 18 15 12 9 6"/></svg>';
+            html += '</div>';
+        });
+
+        container.innerHTML = html;
+    },
+
+    hargaEditItem: null,
+
+    openHargaEdit(itemId) {
+        const item = document.querySelector('.harga-item[onclick*="' + itemId + '"]');
+        fetch('api/harga_search.php?q=').then(r => r.json()).then(data => {
+            const found = (data.items || []).find(i => i.item_id === itemId);
+            if (!found) return;
+
+            this.hargaEditItem = found;
+            const nameEl = document.getElementById('harga-edit-name');
+            const skuEl = document.getElementById('harga-edit-sku');
+            const costEl = document.getElementById('harga-edit-cost');
+            const priceEl = document.getElementById('harga-edit-price');
+
+            if (nameEl) nameEl.textContent = found.name;
+            if (skuEl) skuEl.textContent = found.sku ? 'SKU: ' + found.sku : '';
+            if (costEl) costEl.value = found.cost_price;
+            if (priceEl) priceEl.value = found.unit_price;
+
+            this.updateProfitDisplay();
+
+            const modal = document.getElementById('harga-edit-modal');
+            if (modal) modal.style.display = 'flex';
+            if (costEl) costEl.focus();
+        });
+    },
+
+    closeHargaModal() {
+        const modal = document.getElementById('harga-edit-modal');
+        if (modal) modal.style.display = 'none';
+        this.hargaEditItem = null;
+    },
+
+    updateProfitDisplay() {
+        const costEl = document.getElementById('harga-edit-cost');
+        const priceEl = document.getElementById('harga-edit-price');
+        const profitEl = document.getElementById('harga-edit-profit');
+
+        if (!costEl || !priceEl || !profitEl) return;
+
+        const cost = parseFloat(costEl.value) || 0;
+        const price = parseFloat(priceEl.value) || 0;
+        const profit = price - cost;
+        const pct = cost > 0 ? ((profit / cost) * 100).toFixed(1) : '0.0';
+
+        if (profit >= 0) {
+            profitEl.innerHTML = '<span>Estimasi Keuntungan:</span> <span class="harga-edit-profit-value">+Rp ' + this.formatRupiahFull(profit) + ' (' + pct + '%)</span>';
+            profitEl.style.color = '#059669';
+            profitEl.style.background = 'rgba(5,150,105,0.1)';
+            profitEl.style.borderColor = 'rgba(5,150,105,0.3)';
+        } else {
+            profitEl.innerHTML = '<span>Kerugian:</span> <span class="harga-edit-profit-value">-Rp ' + this.formatRupiahFull(Math.abs(profit)) + '</span>';
+            profitEl.style.color = '#ba1a1a';
+            profitEl.style.background = 'rgba(186,26,26,0.1)';
+            profitEl.style.borderColor = 'rgba(186,26,26,0.3)';
+        }
+    },
+
+    async saveHarga() {
+        if (!this.hargaEditItem) return;
+
+        const costEl = document.getElementById('harga-edit-cost');
+        const priceEl = document.getElementById('harga-edit-price');
+        const btnSave = document.getElementById('harga-btn-save');
+
+        const costPrice = parseFloat(costEl.value) || 0;
+        const unitPrice = parseFloat(priceEl.value) || 0;
+
+        if (btnSave) btnSave.textContent = 'Menyimpan...';
+        if (btnSave) btnSave.disabled = true;
+
+        try {
+            const resp = await fetch('api/harga_update.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    item_id: this.hargaEditItem.item_id,
+                    cost_price: costPrice,
+                    unit_price: unitPrice,
+                })
+            });
+
+            const data = await resp.json();
+            if (data.success) {
+                this.showToast('Harga berhasil disimpan!');
+                this.closeHargaModal();
+                this.loadAllHarga();
+            } else {
+                this.showToast('Gagal: ' + (data.error || 'Unknown error'));
+            }
+        } catch (err) {
+            this.showToast('Error: ' + err.message);
+        } finally {
+            if (btnSave) { btnSave.textContent = 'Simpan'; btnSave.disabled = false; }
+        }
     }
 };
 
