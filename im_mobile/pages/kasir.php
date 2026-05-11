@@ -35,7 +35,7 @@
             <span class="denom-label">Pecahan Rp 100.000</span>
             <span class="denom-hint">Jumlah Lembar</span>
         </div>
-        <input type="number" id="kasir-100k" class="denomination-input kasir-count-input" placeholder="0" min="0" value="0">
+        <input type="number" id="kasir-100k" class="denomination-input kasir-count-input" placeholder="0" min="0" value="">
     </div>
 
     <div class="denomination-card">
@@ -43,7 +43,7 @@
             <span class="denom-label">Pecahan Rp 50.000</span>
             <span class="denom-hint">Jumlah Lembar</span>
         </div>
-        <input type="number" id="kasir-50k" class="denomination-input kasir-count-input" placeholder="0" min="0" value="0">
+        <input type="number" id="kasir-50k" class="denomination-input kasir-count-input" placeholder="0" min="0" value="">
     </div>
 
     <div class="total-card total-kutipan">

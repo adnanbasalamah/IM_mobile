@@ -59,7 +59,14 @@ foreach ($rows as $row) {
     ];
 }
 
+$totalNilai = 0;
+foreach ($sales as $s) {
+    $totalNilai += $s['nilai'];
+}
+
 echo json_encode([
     'date' => $date,
+    'total_nilai' => $totalNilai,
+    'total_transaksi' => count($sales),
     'transfers' => $sales,
 ]);

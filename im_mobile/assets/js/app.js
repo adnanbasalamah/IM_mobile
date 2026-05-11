@@ -262,10 +262,17 @@ const IM = {
         const container = document.getElementById('transfer-list');
         if (!container) return;
 
+        const summaryEl = document.getElementById('transfer-summary');
+        const totalValueEl = document.getElementById('transfer-total-value');
+
         if (!data.transfers || data.transfers.length === 0) {
             container.innerHTML = '<div class="stock-empty"><p>Tidak ada transaksi transfer pada tanggal ini</p></div>';
+            if (summaryEl) summaryEl.style.display = 'none';
             return;
         }
+
+        if (summaryEl) summaryEl.style.display = '';
+        if (totalValueEl) totalValueEl.textContent = this.formatRupiahFull(data.total_nilai || 0);
 
         let html = '';
         data.transfers.forEach(t => {
@@ -561,7 +568,7 @@ const IM = {
         if (!window._stokData) return;
         let text = '*Stok Rendah IkhwanMart*\n\n';
         window._stokData.items.forEach(group => {
-            text += '_' + group.supplier + '_\n';
+            text += '*' + group.supplier + '*\n';
             group.items.forEach(item => {
                 text += '\u2022 ' + item.name + ': ' + item.quantity + ' ' + (item.pack_name || 'pcs') + ' (min: ' + item.reorder_level + ')\n';
             });
@@ -575,7 +582,7 @@ const IM = {
         if (!window._stokData) return;
         let text = 'Stok Rendah IkhwanMart\n\n';
         window._stokData.items.forEach(group => {
-            text += group.supplier + '\n';
+            text += '*' + group.supplier + '*\n';
             group.items.forEach(item => {
                 text += '- ' + item.name + ': ' + item.quantity + ' ' + (item.pack_name || 'pcs') + ' (min: ' + item.reorder_level + ')\n';
             });
