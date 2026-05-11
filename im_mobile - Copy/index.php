@@ -79,19 +79,19 @@ $displayName = $user ? $user['first_name'] : 'User';
             </svg>
             <span class="nav-label">Stock</span>
         </a>
-        <a href="#harga" class="nav-item <?= $page === 'harga' ? 'active' : '' ?>" data-page="harga">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 20h9"/>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            <span class="nav-label">Harga</span>
-        </a>
         <a href="#kasir" class="nav-item <?= $page === 'kasir' ? 'active' : '' ?>" data-page="kasir">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="5" width="20" height="14" rx="2" ry="2"/>
                 <line x1="2" y1="10" x2="22" y2="10"/>
             </svg>
             <span class="nav-label">Kasir</span>
+        </a>
+        <a href="#harga" class="nav-item <?= $page === 'harga' ? 'active' : '' ?>" data-page="harga">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <span class="nav-label">Harga</span>
         </a>
     </nav>
 

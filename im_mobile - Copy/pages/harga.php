@@ -2,7 +2,7 @@
     <div class="section-header">
         <div>
             <span class="section-label">Pasar Segar</span>
-            <h2 style="color:var(--primary)">Update Harga</h2>
+            <h2>Update Harga</h2>
         </div>
     </div>
 </section>
