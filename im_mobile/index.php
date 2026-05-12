@@ -27,7 +27,7 @@ $displayName = $user ? $user['first_name'] : 'User';
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-180x180.png">
-    <link rel="stylesheet" href="assets/css/style.css?v=4">
+    <link rel="stylesheet" href="assets/css/style.css?v=5">
 </head>
 <body class="<?= $page === 'login' ? '' : 'has-nav' ?>">
 
@@ -93,10 +93,18 @@ $displayName = $user ? $user['first_name'] : 'User';
             </svg>
             <span class="nav-label">Kasir</span>
         </a>
+        <a href="#habis" class="nav-item <?= $page === 'habis' ? 'active' : '' ?>" data-page="habis">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span class="nav-label">Habis</span>
+        </a>
     </nav>
 
     <script src="assets/js/chart.umd.js?v=2"></script>
-    <script src="assets/js/app.js?v=4"></script>
+    <script src="assets/js/app.js?v=5"></script>
     <script>
         IM.init();
     </script>

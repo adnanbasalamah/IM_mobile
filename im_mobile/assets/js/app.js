@@ -19,7 +19,7 @@ const IM = {
     },
 
     async navigateTo(page, updateHash = true) {
-        const validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir', 'harga'];
+        const validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir', 'harga', 'habis'];
         if (!validPages.includes(page)) page = 'dashboard';
 
         this.page = page;
@@ -60,6 +60,7 @@ const IM = {
             case 'stok': this.initStok(); break;
             case 'kasir': this.initKasir(); break;
             case 'harga': this.initHarga(); break;
+            case 'habis': this.initHabis(); break;
         }
     },
 
@@ -920,6 +921,107 @@ const IM = {
             this.showToast('Error: ' + err.message);
         } finally {
             if (btnSave) { btnSave.textContent = 'Simpan'; btnSave.disabled = false; }
+        }
+    },
+
+    // ===== STOK HABIS =====
+    initHabis() {
+        const select = document.getElementById('habis-period');
+        if (!select) return;
+        select.addEventListener('change', () => {
+            const display = document.getElementById('habis-period-display');
+            const labels = { '1-week': '1 Minggu', '2-weeks': '2 Minggu', '1-month': '1 Bulan' };
+            if (display) display.textContent = labels[select.value] || select.value;
+            this.loadHabis(select.value);
+        });
+        this.loadHabis(select.value);
+    },
+
+    async loadHabis(period) {
+        const container = document.getElementById('habis-list');
+        if (!container) return;
+        container.innerHTML = '<div class="stock-empty"><p>Memuat data stok...</p></div>';
+
+        try {
+            const resp = await fetch('api/stok_habis.php?period=' + encodeURIComponent(period));
+            const data = await resp.json();
+            this.renderHabis(data);
+        } catch (err) {
+            container.innerHTML = '<div class="stock-empty"><p>Gagal memuat data</p></div>';
+        }
+    },
+
+    renderHabis(data) {
+        const container = document.getElementById('habis-list');
+        const actions = document.getElementById('habis-actions');
+        if (!container) return;
+
+        if (!data.items || data.items.length === 0) {
+            container.innerHTML = '<div class="stock-empty"><p>Tidak ada barang yang habis dalam periode ini</p></div>';
+            if (actions) actions.classList.add('hidden');
+            return;
+        }
+
+        if (actions) actions.classList.remove('hidden');
+
+        let html = '';
+        data.items.forEach(group => {
+            html += '<div class="supplier-section">';
+            html += '<div class="supplier-header">';
+            html += '<div class="bar"></div>';
+            html += '<h2>' + this.escapeHtml(group.supplier) + '</h2>';
+            html += '</div>';
+            group.items.forEach(item => {
+                html += '<div class="stock-card">';
+                html += '<div class="stock-info">';
+                html += '<h3>' + this.escapeHtml(item.name) + '</h3>';
+                html += '</div>';
+                html += '<div class="stock-count">';
+                html += '<span class="count">' + item.quantity + '</span>';
+                html += '<p class="label">' + this.escapeHtml(item.pack_name || 'PCS') + '</p>';
+                html += '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+        });
+
+        container.innerHTML = html;
+        window._habisData = data;
+    },
+
+    sendHabisWhatsApp() {
+        if (!window._habisData) return;
+        let text = '*Stok Rendah IkhwanMart (Habisnya Barang)*\n\n';
+        window._habisData.items.forEach(group => {
+            text += '*' + group.supplier + '*\n';
+            group.items.forEach(item => {
+                text += '\u2022 ' + item.name + ': ' + item.quantity + ' ' + (item.pack_name || 'pcs') + ' (min: ' + item.reorder_level + ')\n';
+            });
+            text += '\n';
+        });
+        const url = 'https://wa.me/?text=' + encodeURIComponent(text);
+        window.open(url, '_blank');
+    },
+
+    copyHabisList() {
+        if (!window._habisData) return;
+        let text = 'Stok Rendah IkhwanMart (Habisnya Barang)\n\n';
+        window._habisData.items.forEach(group => {
+            text += '*' + group.supplier + '*\n';
+            group.items.forEach(item => {
+                text += '- ' + item.name + ': ' + item.quantity + ' ' + (item.pack_name || 'pcs') + ' (min: ' + item.reorder_level + ')\n';
+            });
+            text += '\n';
+        });
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('List stok berhasil disalin!');
+            }).catch(() => {
+                this.copyFallback(text);
+                this.showToast('List stok berhasil disalin!');
+            });
+        } else {
+            this.copyFallback(text);
         }
     }
 };
