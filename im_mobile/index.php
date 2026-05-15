@@ -2,7 +2,7 @@
 require_once 'config.php';
 
 $page = $_GET['page'] ?? 'dashboard';
-$validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir', 'harga'];
+$validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir'];
 
 if (!isLoggedIn()) {
     $page = 'login';
@@ -73,18 +73,11 @@ $displayName = $user ? $user['first_name'] : 'User';
         </a>
         <a href="#stok" class="nav-item <?= $page === 'stok' ? 'active' : '' ?>" data-page="stok">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            <span class="nav-label">Stock</span>
-        </a>
-        <a href="#harga" class="nav-item <?= $page === 'harga' ? 'active' : '' ?>" data-page="harga">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 20h9"/>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            <span class="nav-label">Harga</span>
+            <span class="nav-label">Stok</span>
         </a>
         <a href="#kasir" class="nav-item <?= $page === 'kasir' ? 'active' : '' ?>" data-page="kasir">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -92,14 +85,6 @@ $displayName = $user ? $user['first_name'] : 'User';
                 <line x1="2" y1="10" x2="22" y2="10"/>
             </svg>
             <span class="nav-label">Kasir</span>
-        </a>
-        <a href="#habis" class="nav-item <?= $page === 'habis' ? 'active' : '' ?>" data-page="habis">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            <span class="nav-label">Habis</span>
         </a>
     </nav>
 

@@ -19,7 +19,7 @@ const IM = {
     },
 
     async navigateTo(page, updateHash = true) {
-        const validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir', 'harga', 'habis'];
+        const validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir'];
         if (!validPages.includes(page)) page = 'dashboard';
 
         this.page = page;
@@ -32,7 +32,8 @@ const IM = {
 
         content.classList.add('loading');
         try {
-            const resp = await fetch('pages/' + page + '.php');
+            const pageFile = page === 'stok' ? 'habis' : page;
+            const resp = await fetch('pages/' + pageFile + '.php');
             if (resp.ok) {
                 content.innerHTML = await resp.text();
                 this.afterPageLoad(page);
@@ -57,10 +58,10 @@ const IM = {
             case 'dashboard': this.initDashboard(); break;
             case 'transfer': this.initTransfer(); break;
             case 'nota': this.initNota(); break;
-            case 'stok': this.initStok(); break;
+            case 'stok': this.initHabis(); break;
             case 'kasir': this.initKasir(); break;
-            case 'harga': this.initHarga(); break;
-            case 'habis': this.initHabis(); break;
+            
+            
         }
     },
 
@@ -94,20 +95,12 @@ const IM = {
     // ===== DASHBOARD =====
     initDashboard() {
         const dateInput = document.getElementById('dash-date');
-        const dateDisplay = document.getElementById('dash-date-display');
         if (!dateInput) return;
 
         const today = new Date().toISOString().split('T')[0];
         dateInput.value = today;
-        if (dateDisplay) dateDisplay.textContent = this.formatDate(today);
-
-        const dateBtn = document.getElementById('dash-date-btn');
-        if (dateBtn) {
-            dateBtn.addEventListener('click', () => dateInput.showPicker ? dateInput.showPicker() : dateInput.click());
-        }
 
         dateInput.addEventListener('change', () => {
-            if (dateDisplay) dateDisplay.textContent = this.formatDate(dateInput.value);
             this.loadDashboard(dateInput.value);
         });
 
@@ -230,20 +223,12 @@ const IM = {
     // ===== TRANSFER =====
     initTransfer() {
         const dateInput = document.getElementById('transfer-date');
-        const dateDisplay = document.getElementById('transfer-date-display');
         if (!dateInput) return;
 
         const today = new Date().toISOString().split('T')[0];
         dateInput.value = today;
-        if (dateDisplay) dateDisplay.textContent = this.formatDate(today);
-
-        const dateBtn = document.getElementById('transfer-date-btn');
-        if (dateBtn) {
-            dateBtn.addEventListener('click', () => dateInput.showPicker ? dateInput.showPicker() : dateInput.click());
-        }
 
         dateInput.addEventListener('change', () => {
-            if (dateDisplay) dateDisplay.textContent = this.formatDate(dateInput.value);
             this.loadTransfer(dateInput.value);
         });
 
@@ -477,131 +462,6 @@ const IM = {
         }
     },
 
-    // ===== CEK STOK =====
-    initStok() {
-        const select = document.getElementById('stok-kategori');
-        if (!select) return;
-
-        this.loadCategories(select);
-        select.addEventListener('change', () => {
-            this.loadStok(select.value);
-        });
-    },
-
-    async loadCategories(selectEl) {
-        try {
-            const resp = await fetch('api/categories.php');
-            const data = await resp.json();
-            if (data.categories && data.categories.length > 0) {
-                data.categories.forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat;
-                    opt.textContent = cat;
-                    selectEl.appendChild(opt);
-                });
-            }
-        } catch (err) {
-            console.error('Categories load error:', err);
-        }
-    },
-
-    async loadStok(kategori) {
-        const container = document.getElementById('stok-list');
-        const actions = document.getElementById('stok-actions');
-        if (!container) return;
-
-        if (!kategori) {
-            container.innerHTML = '<div class="stock-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg><p>Pilih kategori terlebih dahulu</p></div>';
-            if (actions) actions.classList.add('hidden');
-            return;
-        }
-
-        container.innerHTML = '<div class="stock-empty"><p>Memuat data stok...</p></div>';
-
-        try {
-            const resp = await fetch('api/stok.php?kategori=' + encodeURIComponent(kategori));
-            const data = await resp.json();
-            this.renderStok(data);
-        } catch (err) {
-            container.innerHTML = '<div class="stock-empty"><p>Gagal memuat data</p></div>';
-        }
-    },
-
-    renderStok(data) {
-        const container = document.getElementById('stok-list');
-        const actions = document.getElementById('stok-actions');
-        if (!container) return;
-
-        if (!data.items || data.items.length === 0) {
-            container.innerHTML = '<div class="stock-empty"><p>Tidak ada barang dengan stok rendah untuk kategori ini</p></div>';
-            if (actions) actions.classList.add('hidden');
-            return;
-        }
-
-        if (actions) actions.classList.remove('hidden');
-
-        let html = '';
-        data.items.forEach(group => {
-            html += '<div class="supplier-section">';
-            html += '<div class="supplier-header">';
-            html += '<div class="bar"></div>';
-            html += '<h2>' + this.escapeHtml(group.supplier) + '</h2>';
-            html += '</div>';
-            group.items.forEach(item => {
-                html += '<div class="stock-card">';
-                html += '<div class="stock-info">';
-                html += '<h3>' + this.escapeHtml(item.name) + '</h3>';
-                if (item.sku) html += '<p class="sku">SKU: ' + this.escapeHtml(item.sku) + '</p>';
-                html += '</div>';
-                html += '<div class="stock-count">';
-                html += '<span class="count">' + item.quantity + '</span>';
-                html += '<p class="label">' + this.escapeHtml(item.pack_name || 'PCS') + '</p>';
-                html += '</div>';
-                html += '</div>';
-            });
-            html += '</div>';
-        });
-
-        container.innerHTML = html;
-        window._stokData = data;
-    },
-
-    sendStokWhatsApp() {
-        if (!window._stokData) return;
-        let text = '*Stok Rendah IkhwanMart*\n\n';
-        window._stokData.items.forEach(group => {
-            text += '*' + group.supplier + '*\n';
-            group.items.forEach(item => {
-                text += '\u2022 ' + item.name + ': ' + item.quantity + ' ' + (item.pack_name || 'pcs') + ' (min: ' + item.reorder_level + ')\n';
-            });
-            text += '\n';
-        });
-        const url = 'https://wa.me/?text=' + encodeURIComponent(text);
-        window.open(url, '_blank');
-    },
-
-    copyStokList() {
-        if (!window._stokData) return;
-        let text = 'Stok Rendah IkhwanMart\n\n';
-        window._stokData.items.forEach(group => {
-            text += '*' + group.supplier + '*\n';
-            group.items.forEach(item => {
-                text += '- ' + item.name + ': ' + item.quantity + ' ' + (item.pack_name || 'pcs') + ' (min: ' + item.reorder_level + ')\n';
-            });
-            text += '\n';
-        });
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text).then(() => {
-                this.showToast('List stok berhasil disalin!');
-            }).catch(() => {
-                this.copyFallback(text);
-                this.showToast('List stok berhasil disalin!');
-            });
-        } else {
-            this.copyFallback(text);
-        }
-    },
-
     // ===== CEK KASIR =====
     initKasir() {
         const dateInput = document.getElementById('kasir-date');
@@ -732,209 +592,20 @@ const IM = {
         this.calculateKasir();
     },
 
-    // ===== UPDATE HARGA =====
-    initHarga() {
-        const searchInput = document.getElementById('harga-search');
-        const clearBtn = document.getElementById('harga-search-clear');
-        if (!searchInput) return;
-
-        searchInput.addEventListener('input', () => {
-            const q = searchInput.value.trim();
-            clearBtn.style.display = q ? 'flex' : 'none';
-            this.searchHarga(q);
-        });
-
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                clearBtn.style.display = 'none';
-                document.getElementById('harga-list').innerHTML = '<div class="stock-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;color:var(--outline)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Ketik minimal 3 huruf untuk mencari</p></div>';
-                document.getElementById('harga-count').textContent = '0 Produk';
-            });
-        }
-
-        const modalOverlay = document.getElementById('harga-modal-overlay');
-        if (modalOverlay) modalOverlay.addEventListener('click', () => this.closeHargaModal());
-
-        const btnCancel = document.getElementById('harga-btn-cancel');
-        if (btnCancel) btnCancel.addEventListener('click', () => this.closeHargaModal());
-
-        const btnSave = document.getElementById('harga-btn-save');
-        if (btnSave) btnSave.addEventListener('click', () => this.saveHarga());
-
-        const costInput = document.getElementById('harga-edit-cost');
-        const priceInput = document.getElementById('harga-edit-price');
-        if (costInput) costInput.addEventListener('input', () => this.updateProfitDisplay());
-        if (priceInput) priceInput.addEventListener('input', () => this.updateProfitDisplay());
-    },
-
-    async loadAllHarga() {
-        try {
-            const resp = await fetch('api/harga_search.php');
-            const data = await resp.json();
-            this.renderHargaResults(data);
-        } catch (err) {
-            console.error('Harga load error:', err);
-        }
-    },
-
-    searchTimeout: null,
-
-    searchHarga(q) {
-        clearTimeout(this.searchTimeout);
-        const container = document.getElementById('harga-list');
-        const countEl = document.getElementById('harga-count');
-        if (q.length < 3) {
-            if (container) container.innerHTML = '<div class="stock-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;color:var(--outline)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Ketik minimal 3 huruf untuk mencari</p></div>';
-            if (countEl) countEl.textContent = '0 Produk';
-            return;
-        }
-        this.searchTimeout = setTimeout(() => {
-            fetch('api/harga_search.php?q=' + encodeURIComponent(q)).then(r => r.json()).then(data => this.renderHargaResults(data)).catch(() => {});
-        }, 300);
-    },
-
-    renderHargaResults(data) {
-        const container = document.getElementById('harga-list');
-        const countEl = document.getElementById('harga-count');
-        if (!container) return;
-
-        const items = data.items || [];
-        if (countEl) countEl.textContent = (data.total || items.length) + ' Produk';
-
-        if (items.length === 0) {
-            container.innerHTML = '<div class="stock-empty"><p>Produk tidak ditemukan</p></div>';
-            return;
-        }
-
-        let html = '';
-        items.forEach(item => {
-            html += '<div class="harga-item" onclick="IM.openHargaEdit(' + item.item_id + ')">';
-            html += '<div class="harga-item-info">';
-            html += '<p class="harga-item-name">' + this.escapeHtml(item.name) + '</p>';
-            html += '<div class="harga-item-detail">';
-            html += '<div class="harga-item-prices">';
-            html += '<span class="harga-item-price-tag harga-item-cost">Modal ' + this.formatRupiahFull(item.cost_price) + '</span>';
-            html += '<span class="harga-item-price-tag harga-item-selling">Jual ' + this.formatRupiahFull(item.unit_price) + '</span>';
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-            html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="harga-item-arrow" style="width:20px;height:20px"><polyline points="9 18 15 12 9 6"/></svg>';
-            html += '</div>';
-        });
-
-        container.innerHTML = html;
-    },
-
-    hargaEditItem: null,
-
-    openHargaEdit(itemId) {
-        const item = document.querySelector('.harga-item[onclick*="' + itemId + '"]');
-        fetch('api/harga_search.php?q=').then(r => r.json()).then(data => {
-            const found = (data.items || []).find(i => i.item_id === itemId);
-            if (!found) return;
-
-            this.hargaEditItem = found;
-            const nameEl = document.getElementById('harga-edit-name');
-            const skuEl = document.getElementById('harga-edit-sku');
-            const costEl = document.getElementById('harga-edit-cost');
-            const priceEl = document.getElementById('harga-edit-price');
-
-            if (nameEl) nameEl.textContent = found.name;
-            if (skuEl) skuEl.textContent = found.sku ? 'SKU: ' + found.sku : '';
-            if (costEl) costEl.value = found.cost_price;
-            if (priceEl) priceEl.value = found.unit_price;
-
-            this.updateProfitDisplay();
-
-            const modal = document.getElementById('harga-edit-modal');
-            if (modal) modal.style.display = 'flex';
-            if (costEl) costEl.focus();
-        });
-    },
-
-    closeHargaModal() {
-        const modal = document.getElementById('harga-edit-modal');
-        if (modal) modal.style.display = 'none';
-        this.hargaEditItem = null;
-    },
-
-    updateProfitDisplay() {
-        const costEl = document.getElementById('harga-edit-cost');
-        const priceEl = document.getElementById('harga-edit-price');
-        const profitEl = document.getElementById('harga-edit-profit');
-
-        if (!costEl || !priceEl || !profitEl) return;
-
-        const cost = parseFloat(costEl.value) || 0;
-        const price = parseFloat(priceEl.value) || 0;
-        const profit = price - cost;
-        const pct = cost > 0 ? ((profit / cost) * 100).toFixed(1) : '0.0';
-
-        if (profit >= 0) {
-            profitEl.innerHTML = '<span>Estimasi Keuntungan:</span> <span class="harga-edit-profit-value">+Rp ' + this.formatRupiahFull(profit) + ' (' + pct + '%)</span>';
-            profitEl.style.color = '#059669';
-            profitEl.style.background = 'rgba(5,150,105,0.1)';
-            profitEl.style.borderColor = 'rgba(5,150,105,0.3)';
-        } else {
-            profitEl.innerHTML = '<span>Kerugian:</span> <span class="harga-edit-profit-value">-Rp ' + this.formatRupiahFull(Math.abs(profit)) + '</span>';
-            profitEl.style.color = '#ba1a1a';
-            profitEl.style.background = 'rgba(186,26,26,0.1)';
-            profitEl.style.borderColor = 'rgba(186,26,26,0.3)';
-        }
-    },
-
-    async saveHarga() {
-        if (!this.hargaEditItem) return;
-
-        const costEl = document.getElementById('harga-edit-cost');
-        const priceEl = document.getElementById('harga-edit-price');
-        const btnSave = document.getElementById('harga-btn-save');
-
-        const costPrice = parseFloat(costEl.value) || 0;
-        const unitPrice = parseFloat(priceEl.value) || 0;
-
-        if (btnSave) btnSave.textContent = 'Menyimpan...';
-        if (btnSave) btnSave.disabled = true;
-
-        try {
-            const resp = await fetch('api/harga_update.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    item_id: this.hargaEditItem.item_id,
-                    cost_price: costPrice,
-                    unit_price: unitPrice,
-                })
-            });
-
-            const data = await resp.json();
-            if (data.success) {
-                this.showToast('Harga berhasil disimpan!');
-                this.closeHargaModal();
-                const searchInput = document.getElementById('harga-search');
-                this.searchHarga(searchInput ? searchInput.value.trim() : '');
-            } else {
-                this.showToast('Gagal: ' + (data.error || 'Unknown error'));
-            }
-        } catch (err) {
-            this.showToast('Error: ' + err.message);
-        } finally {
-            if (btnSave) { btnSave.textContent = 'Simpan'; btnSave.disabled = false; }
-        }
-    },
-
     // ===== STOK HABIS =====
     initHabis() {
         const select = document.getElementById('habis-period');
         if (!select) return;
         select.addEventListener('change', () => {
-            const display = document.getElementById('habis-period-display');
-            const labels = { '1-week': '1 Minggu', '2-weeks': '2 Minggu', '1-month': '1 Bulan' };
-            if (display) display.textContent = labels[select.value] || select.value;
-            this.loadHabis(select.value);
+            if (select.value === 'none') {
+                const container = document.getElementById('habis-list');
+                const actions = document.getElementById('habis-actions');
+                if (container) container.innerHTML = '<div class="stock-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;color:var(--outline)"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><p>Pilih periode terlebih dahulu</p></div>';
+                if (actions) actions.classList.add('hidden');
+            } else {
+                this.loadHabis(select.value);
+            }
         });
-        this.loadHabis(select.value);
     },
 
     async loadHabis(period) {
