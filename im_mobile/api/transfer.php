@@ -29,6 +29,7 @@ $sql = "SELECT s.sale_id,
           AND sp.payment_type LIKE '%Transfer%'
           AND s.sale_status = 0
           AND sp.cash_adjustment = 0
+          AND (sp.reference_code IS NULL OR sp.reference_code = '')
         ORDER BY s.sale_time ASC";
 
 $stmt = $db->prepare($sql);

@@ -49,11 +49,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
         exit;
     }
 
-    $_SESSION['user_id'] = $user['person_id'];
-    $_SESSION['username'] = $user['username'];
-    $_SESSION['first_name'] = $user['first_name'];
-    $_SESSION['last_name'] = $user['last_name'];
-    unset($_SESSION['login_error']);
+$_SESSION['user_id'] = $user['person_id'];
+$_SESSION['username'] = $user['username'];
+$_SESSION['first_name'] = $user['first_name'];
+$_SESSION['last_name'] = $user['last_name'];
+
+$adminStmt = $db->prepare("SELECT COUNT(*) FROM ospos_grants WHERE person_id = ? AND permission_id IN ('employees', 'config')");
+$adminStmt->execute([$user['person_id']]);
+$_SESSION['is_admin'] = $adminStmt->fetchColumn() > 0;
+
+unset($_SESSION['login_error']);
 
     header('Location: index.php?page=dashboard');
     exit;

@@ -91,6 +91,7 @@ $displayName = $user ? $user['first_name'] : 'User';
     <script src="assets/js/chart.umd.js?v=2"></script>
     <script src="assets/js/app.js?v=5"></script>
     <script>
+        IM.isAdmin = <?php echo !empty($_SESSION['is_admin']) ? 'true' : 'false'; ?>;
         IM.init();
     </script>
 <?php endif; ?>

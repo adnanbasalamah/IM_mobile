@@ -263,13 +263,20 @@ const IM = {
 
         let html = '';
         data.transfers.forEach(t => {
-            html += '<div class="transfer-item">';
+            html += '<div class="transfer-item" id="transfer-' + t.sale_id + '">';
             html += '<div class="transfer-row">';
             html += '<span class="transfer-jam">' + t.jam_fmt + '</span>';
             html += '<span class="transfer-nilai">' + this.formatRupiahFull(t.nilai) + '</span>';
             html += '</div>';
             html += '<div class="transfer-kasir">Kasir: ' + this.escapeHtml(t.kasir) + '</div>';
+            html += '<div class="transfer-bottom">';
             html += '<a href="#nota" class="transfer-pelanggan" data-sale-id="' + t.sale_id + '" onclick="IM.openNota(' + t.sale_id + '); return false;">' + this.escapeHtml(t.pelanggan) + '</a>';
+            if (this.isAdmin) {
+                html += '<button class="transfer-dismiss" onclick="IM.dismissTransfer(' + t.sale_id + ')" title="Hapus dari daftar">';
+                html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+                html += '</button>';
+            }
+            html += '</div>';
             html += '</div>';
         });
 
@@ -285,6 +292,29 @@ const IM = {
     openNota(saleId) {
         window._pendingNotaId = saleId;
         this.navigateTo('nota');
+    },
+
+    async dismissTransfer(saleId) {
+        try {
+            const resp = await fetch('api/transfer_dismiss.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sale_id: saleId })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                const el = document.getElementById('transfer-' + saleId);
+                if (el) el.remove();
+                const dateInput = document.getElementById('transfer-date');
+                if (dateInput && dateInput.value) {
+                    this.loadTransfer(dateInput.value);
+                }
+            } else {
+                this.showToast('Gagal menghapus transaksi');
+            }
+        } catch (err) {
+            this.showToast('Error: ' + err.message);
+        }
     },
 
     // ===== NOTA =====

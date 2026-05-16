@@ -56,5 +56,6 @@ function currentUser() {
         'username' => $_SESSION['username'] ?? '',
         'first_name' => $_SESSION['first_name'] ?? '',
         'last_name' => $_SESSION['last_name'] ?? '',
+        'is_admin' => $_SESSION['is_admin'] ?? false,
     ];
 }
