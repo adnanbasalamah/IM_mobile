@@ -19,7 +19,7 @@ const IM = {
     },
 
     async navigateTo(page, updateHash = true) {
-        const validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir'];
+        const validPages = ['dashboard', 'transfer', 'nota', 'stok', 'omset'];
         if (!validPages.includes(page)) page = 'dashboard';
 
         this.page = page;
@@ -59,9 +59,7 @@ const IM = {
             case 'transfer': this.initTransfer(); break;
             case 'nota': this.initNota(); break;
             case 'stok': this.initHabis(); break;
-            case 'kasir': this.initKasir(); break;
-            
-            
+            case 'omset': this.initOmset(); break;
         }
     },
 
@@ -492,136 +490,6 @@ const IM = {
         }
     },
 
-    // ===== CEK KASIR =====
-    initKasir() {
-        const dateInput = document.getElementById('kasir-date');
-        const timeInput = document.getElementById('kasir-time');
-        const select = document.getElementById('kasir-employee');
-
-        if (!dateInput || !timeInput) return;
-
-        const now = new Date();
-        dateInput.value = now.toISOString().split('T')[0];
-        timeInput.value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-
-        this.loadEmployees(select);
-        this.bindKasirInputs();
-    },
-
-    async loadEmployees(selectEl) {
-        if (!selectEl) return;
-        try {
-            const resp = await fetch('api/employees.php');
-            const data = await resp.json();
-            if (data.employees) {
-                data.employees.forEach(emp => {
-                    const opt = document.createElement('option');
-                    opt.value = emp.person_id;
-                    opt.textContent = emp.nama;
-                    selectEl.appendChild(opt);
-                });
-            }
-        } catch (err) {
-            console.error('Employees load error:', err);
-        }
-    },
-
-    bindKasirInputs() {
-        const inputs = document.querySelectorAll('.kasir-count-input');
-        inputs.forEach(input => {
-            input.addEventListener('input', () => this.calculateKasir());
-        });
-
-        const form = document.getElementById('kasir-form');
-        if (form) {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.submitKasir();
-            });
-        }
-    },
-
-    calculateKasir() {
-        const rp100k = parseInt(document.getElementById('kasir-100k')?.value || 0) * 100000;
-        const rp50k = parseInt(document.getElementById('kasir-50k')?.value || 0) * 50000;
-        const rp20k = parseInt(document.getElementById('kasir-20k')?.value || 0) * 20000;
-        const rp10k = parseInt(document.getElementById('kasir-10k')?.value || 0) * 10000;
-        const rp5k = parseInt(document.getElementById('kasir-5k')?.value || 0) * 5000;
-        const rp2k = parseInt(document.getElementById('kasir-2k')?.value || 0) * 2000;
-        const rp1k = parseInt(document.getElementById('kasir-1k')?.value || 0) * 1000;
-        const coinTotal = parseInt(document.getElementById('kasir-coin')?.value || 0);
-
-        const totalKutipan = rp100k + rp50k;
-        const totalDiKasir = totalKutipan + rp20k + rp10k + rp5k + rp2k + rp1k + coinTotal;
-
-        const elKutipan = document.getElementById('total-kutipan');
-        const elKasir = document.getElementById('total-di-kasir');
-        if (elKutipan) elKutipan.textContent = this.formatRupiahFull(totalKutipan);
-        if (elKasir) elKasir.textContent = this.formatRupiahFull(totalDiKasir);
-    },
-
-    async submitKasir() {
-        const personId = parseInt(document.getElementById('kasir-employee')?.value || 0);
-        const cashierName = document.getElementById('kasir-employee')?.selectedOptions[0]?.text || '';
-        const recordDate = document.getElementById('kasir-date')?.value || '';
-        const recordTime = document.getElementById('kasir-time')?.value || '';
-
-        const rp100k = parseInt(document.getElementById('kasir-100k')?.value || 0);
-        const rp50k = parseInt(document.getElementById('kasir-50k')?.value || 0);
-        const rp20k = parseInt(document.getElementById('kasir-20k')?.value || 0);
-        const rp10k = parseInt(document.getElementById('kasir-10k')?.value || 0);
-        const rp5k = parseInt(document.getElementById('kasir-5k')?.value || 0);
-        const rp2k = parseInt(document.getElementById('kasir-2k')?.value || 0);
-        const rp1k = parseInt(document.getElementById('kasir-1k')?.value || 0);
-        const coinTotal = parseInt(document.getElementById('kasir-coin')?.value || 0);
-        const totalKutipan = rp100k * 100000 + rp50k * 50000;
-        const totalDiKasir = totalKutipan + rp20k * 20000 + rp10k * 10000 + rp5k * 5000 + rp2k * 2000 + rp1k * 1000 + coinTotal;
-
-        if (!personId || !recordDate || !recordTime) {
-            this.showToast('Data tidak lengkap');
-            return;
-        }
-
-        try {
-            const resp = await fetch('api/kasir_save.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    person_id: personId,
-                    cashier: cashierName,
-                    record_date: recordDate,
-                    record_time: recordTime,
-                    rp100k: rp100k,
-                    rp50k: rp50k,
-                    rp20k: rp20k,
-                    rp10k: rp10k,
-                    rp5k: rp5k,
-                    rp2k: rp2k,
-                    rp1k: rp1k,
-                    coin_total: coinTotal,
-                    total_kutipan: totalKutipan,
-                    total_di_kasir: totalDiKasir,
-                })
-            });
-
-            const data = await resp.json();
-            if (data.success) {
-                this.showToast('Data kasir berhasil disimpan!');
-                this.resetKasirForm();
-            } else {
-                this.showToast('Gagal menyimpan: ' + (data.error || 'Unknown error'));
-            }
-        } catch (err) {
-            this.showToast('Error: ' + err.message);
-        }
-    },
-
-    resetKasirForm() {
-        const inputs = document.querySelectorAll('.kasir-count-input');
-        inputs.forEach(input => { input.value = ''; });
-        this.calculateKasir();
-    },
-
     // ===== STOK HABIS =====
     initHabis() {
         const select = document.getElementById('habis-period');
@@ -724,6 +592,71 @@ const IM = {
         } else {
             this.copyFallback(text);
         }
+    },
+
+    // ===== OMSET =====
+    initOmset() {
+        this.loadOmset();
+    },
+
+    async loadOmset() {
+        const container = document.getElementById('omset-comparison');
+        if (!container) return;
+
+        try {
+            const resp = await fetch('api/omset.php');
+            const data = await resp.json();
+            this.renderOmset(data);
+        } catch (err) {
+            container.innerHTML = '<div class="stock-empty"><p>Gagal memuat data</p></div>';
+        }
+    },
+
+    renderOmset(data) {
+        const container = document.getElementById('omset-comparison');
+        const elAvgThis = document.getElementById('omset-avg-this');
+        const elAvgLast = document.getElementById('omset-avg-last');
+        const elSubThis = document.getElementById('omset-sub-this');
+        const elSubLast = document.getElementById('omset-sub-last');
+        if (!container) return;
+
+        if (elAvgThis) elAvgThis.textContent = this.formatRupiahFull(data.avg_this_month);
+        if (elAvgLast) elAvgLast.textContent = this.formatRupiahFull(data.avg_last_month);
+        if (elSubThis) elSubThis.textContent = '(' + data.days_this_month + ' hari, total ' + this.formatRupiahFull(data.total_this_month) + ')';
+        if (elSubLast) elSubLast.textContent = '(' + data.days_last_month + ' hari, total ' + this.formatRupiahFull(data.total_last_month) + ')';
+
+        const pct = data.change_percent;
+        const isUp = pct >= 0;
+        const arrow = isUp ? '&#9650;' : '&#9660;';
+        const color = isUp ? '#059669' : '#ba1a1a';
+        const label = isUp ? 'Naik' : 'Turun';
+
+        let html = '';
+        html += '<div class="omset-card" style="border-color:' + color + '">';
+        html += '<div class="omset-card-header">';
+        html += '<span class="omset-card-label">Perbandingan Rata-rata Harian</span>';
+        html += '<span class="omset-card-badge" style="background:' + color + ';color:#fff;">' + arrow + ' ' + label + ' ' + Math.abs(pct) + '%</span>';
+        html += '</div>';
+        html += '<div class="omset-card-body">';
+        html += '<div class="omset-bar-container">';
+        const maxVal = Math.max(data.avg_this_month, data.avg_last_month, 1);
+        const thisPct = (data.avg_this_month / maxVal * 100).toFixed(1);
+        const lastPct = (data.avg_last_month / maxVal * 100).toFixed(1);
+        html += '<div class="omset-bar-row">';
+        html += '<span class="omset-bar-label">Bulan Ini</span>';
+        html += '<div class="omset-bar-track"><div class="omset-bar-fill" style="width:' + thisPct + '%;background:var(--primary)"></div></div>';
+        html += '<span class="omset-bar-value">' + this.formatRupiahFull(data.avg_this_month) + '</span>';
+        html += '</div>';
+        html += '<div class="omset-bar-row">';
+        html += '<span class="omset-bar-label">Bulan Lalu</span>';
+        html += '<div class="omset-bar-track"><div class="omset-bar-fill" style="width:' + lastPct + '%;background:var(--outline-variant)"></div></div>';
+        html += '<span class="omset-bar-value">' + this.formatRupiahFull(data.avg_last_month) + '</span>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        container.innerHTML = html;
     }
 };
 

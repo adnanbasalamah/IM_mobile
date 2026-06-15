@@ -2,7 +2,7 @@
 require_once 'config.php';
 
 $page = $_GET['page'] ?? 'dashboard';
-$validPages = ['dashboard', 'transfer', 'nota', 'stok', 'kasir'];
+$validPages = ['dashboard', 'transfer', 'nota', 'stok', 'omset'];
 
 if (!isLoggedIn()) {
     $page = 'login';
@@ -27,7 +27,7 @@ $displayName = $user ? $user['first_name'] : 'User';
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-180x180.png">
-    <link rel="stylesheet" href="assets/css/style.css?v=5">
+    <link rel="stylesheet" href="assets/css/style.css?v=7">
 </head>
 <body class="<?= $page === 'login' ? '' : 'has-nav' ?>">
 
@@ -79,17 +79,19 @@ $displayName = $user ? $user['first_name'] : 'User';
             </svg>
             <span class="nav-label">Stok</span>
         </a>
-        <a href="#kasir" class="nav-item <?= $page === 'kasir' ? 'active' : '' ?>" data-page="kasir">
+        <a href="#omset" class="nav-item <?= $page === 'omset' ? 'active' : '' ?>" data-page="omset">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="5" width="20" height="14" rx="2" ry="2"/>
-                <line x1="2" y1="10" x2="22" y2="10"/>
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+                <line x1="2" y1="20" x2="22" y2="20"/>
             </svg>
-            <span class="nav-label">Kasir</span>
+            <span class="nav-label">Omset</span>
         </a>
     </nav>
 
     <script src="assets/js/chart.umd.js?v=2"></script>
-    <script src="assets/js/app.js?v=5"></script>
+    <script src="assets/js/app.js?v=6"></script>
     <script>
         IM.isAdmin = <?php echo !empty($_SESSION['is_admin']) ? 'true' : 'false'; ?>;
         IM.init();
